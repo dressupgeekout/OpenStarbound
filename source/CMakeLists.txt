@@ -473,21 +473,23 @@ endif()
 find_package(ZLIB REQUIRED)
 find_package(PNG REQUIRED)
 find_package(Freetype REQUIRED)
-find_package(Opus CONFIG REQUIRED)
 find_package(OggVorbis REQUIRED)
-find_package(zstd CONFIG REQUIRED)
+
+include(FindPkgConfig)
+pkg_check_modules(OPUS REQUIRED opus)
+pkg_check_modules(ZSTD REQUIRED libzstd)
 
 include_directories(SYSTEM
     ${FREETYPE_INCLUDE_DIRS}
-    ${OGGVORBIS_INCLUDE_DIR}
+    ${VORBIS_INCLUDE_DIR}
 )
 
 set(STAR_EXT_LIBS ${STAR_EXT_LIBS}
     ZLIB::ZLIB
     PNG::PNG
     $<IF:$<TARGET_EXISTS:Freetype::Freetype>,Freetype::Freetype,freetype>
-    $<IF:$<TARGET_EXISTS:zstd::libzstd_shared>,zstd::libzstd_shared,zstd::libzstd_static>
-    Opus::opus
+    ${ZSTD_LINK_LIBRARIES}
+    ${OPUS_LINK_LIBRARIES}
     ${VORBISFILE_LIBRARY}
     ${VORBIS_LIBRARY}
     ${OGG_LIBRARY}
@@ -502,12 +504,16 @@ if(STAR_BUILD_GUI)
   )
 
   find_package(OpenGL REQUIRED)
-  find_package(GLEW REQUIRED)
+  pkg_check_modules(GLEW REQUIRED glew)
 
   include_directories(SYSTEM ${GLEW_INCLUDE_DIR})
+
+  find_path(GL_INCLUDE_DIR NAMES GL/gl.h REQUIRED)
+  include_directories(SYSTEM ${GL_INCLUDE_DIR})
+
   set(STAR_EXT_GUI_LIBS ${STAR_EXT_GUI_LIBS}
       ${OPENGL_LIBRARY}
-      GLEW::glew_s
+      ${GLEW_LINK_LIBRARIES}
   )
 
   if(STAR_SYSTEM_MACOS)
